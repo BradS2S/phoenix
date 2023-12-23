@@ -2,7 +2,7 @@
 
 There are currently a number of built-in Phoenix-specific and Ecto-specific [Mix tasks](`Mix.Task`) available to us within a newly-generated application. We can also create our own application specific tasks.
 
-> Note to learn more about `mix`, you can read Elixir's official [Introduction to Mix](https://elixir-lang.org/getting-started/mix-otp/introduction-to-mix.html).
+> Note to learn more about `mix`, you can read Elixir's official [Introduction to Mix](https://hexdocs.pm/elixir/introduction-to-mix.html).
 
 ## Phoenix tasks
 
@@ -45,12 +45,12 @@ The `mix phx.gen.html` task takes the following arguments: the module name of th
 ```console
 $ mix phx.gen.html Blog Post posts body:string word_count:integer
 * creating lib/hello_web/controllers/post_controller.ex
-* creating lib/hello_web/templates/post/edit.html.heex
-* creating lib/hello_web/templates/post/form.html.heex
-* creating lib/hello_web/templates/post/index.html.heex
-* creating lib/hello_web/templates/post/new.html.heex
-* creating lib/hello_web/templates/post/show.html.heex
-* creating lib/hello_web/views/post_view.ex
+* creating lib/hello_web/controllers/post_html/edit.html.heex
+* creating lib/hello_web/controllers/post_html/post_form.html.heex
+* creating lib/hello_web/controllers/post_html/index.html.heex
+* creating lib/hello_web/controllers/post_html/new.html.heex
+* creating lib/hello_web/controllers/post_html/show.html.heex
+* creating lib/hello_web/controllers/post_html.ex
 * creating test/hello_web/controllers/post_controller_test.exs
 * creating lib/hello/blog/post.ex
 * creating priv/repo/migrations/20211001233016_create_posts.exs
@@ -89,12 +89,12 @@ If we don't want to create a context or schema for our resource we can use the `
 ```console
 $ mix phx.gen.html Blog Post posts body:string word_count:integer --no-context
 * creating lib/hello_web/controllers/post_controller.ex
-* creating lib/hello_web/templates/post/edit.html.heex
-* creating lib/hello_web/templates/post/form.html.heex
-* creating lib/hello_web/templates/post/index.html.heex
-* creating lib/hello_web/templates/post/new.html.heex
-* creating lib/hello_web/templates/post/show.html.heex
-* creating lib/hello_web/views/post_view.ex
+* creating lib/hello_web/controllers/post_html/edit.html.heex
+* creating lib/hello_web/controllers/post_html/post_form.html.heex
+* creating lib/hello_web/controllers/post_html/index.html.heex
+* creating lib/hello_web/controllers/post_html/new.html.heex
+* creating lib/hello_web/controllers/post_html/show.html.heex
+* creating lib/hello_web/controllers/post_html.ex
 * creating test/hello_web/controllers/post_controller_test.exs
 ```
 
@@ -111,12 +111,12 @@ Similarly, if we want a context created without a schema for our resource we can
 ```console
 $ mix phx.gen.html Blog Post posts body:string word_count:integer --no-schema
 * creating lib/hello_web/controllers/post_controller.ex
-* creating lib/hello_web/templates/post/edit.html.heex
-* creating lib/hello_web/templates/post/form.html.heex
-* creating lib/hello_web/templates/post/index.html.heex
-* creating lib/hello_web/templates/post/new.html.heex
-* creating lib/hello_web/templates/post/show.html.heex
-* creating lib/hello_web/views/post_view.ex
+* creating lib/hello_web/controllers/post_html/edit.html.heex
+* creating lib/hello_web/controllers/post_html/post_form.html.heex
+* creating lib/hello_web/controllers/post_html/index.html.heex
+* creating lib/hello_web/controllers/post_html/new.html.heex
+* creating lib/hello_web/controllers/post_html/show.html.heex
+* creating lib/hello_web/controllers/post_html.ex
 * creating test/hello_web/controllers/post_controller_test.exs
 * creating lib/hello/blog.ex
 * injecting lib/hello/blog.ex
@@ -137,9 +137,9 @@ The `mix phx.gen.json` task takes the following arguments: the module name of th
 ```console
 $ mix phx.gen.json Blog Post posts title:string content:string
 * creating lib/hello_web/controllers/post_controller.ex
-* creating lib/hello_web/views/post_view.ex
+* creating lib/hello_web/controllers/post_json.ex
 * creating test/hello_web/controllers/post_controller_test.exs
-* creating lib/hello_web/views/changeset_view.ex
+* creating lib/hello_web/controllers/changeset_json.ex
 * creating lib/hello_web/controllers/fallback_controller.ex
 * creating lib/hello/blog/post.ex
 * creating priv/repo/migrations/20170906153323_create_posts.exs
@@ -235,7 +235,7 @@ $ mix phx.gen.auth Accounts User users
 * creating lib/hello/accounts/user_token.ex
 * creating lib/hello_web/controllers/user_auth.ex
 * creating test/hello_web/controllers/user_auth_test.exs
-* creating lib/hello_web/views/user_confirmation_view.ex
+* creating lib/hello_web/controllers/user_confirmation_html.ex
 * creating lib/hello_web/templates/user_confirmation/new.html.heex
 * creating lib/hello_web/templates/user_confirmation/edit.html.heex
 * creating lib/hello_web/controllers/user_confirmation_controller.ex
@@ -243,17 +243,17 @@ $ mix phx.gen.auth Accounts User users
 * creating lib/hello_web/templates/user_registration/new.html.heex
 * creating lib/hello_web/controllers/user_registration_controller.ex
 * creating test/hello_web/controllers/user_registration_controller_test.exs
-* creating lib/hello_web/views/user_registration_view.ex
-* creating lib/hello_web/views/user_reset_password_view.ex
+* creating lib/hello_web/controllers/user_registration_html.ex
+* creating lib/hello_web/controllers/user_reset_password_html.ex
 * creating lib/hello_web/controllers/user_reset_password_controller.ex
 * creating test/hello_web/controllers/user_reset_password_controller_test.exs
 * creating lib/hello_web/templates/user_reset_password/edit.html.heex
 * creating lib/hello_web/templates/user_reset_password/new.html.heex
-* creating lib/hello_web/views/user_session_view.ex
+* creating lib/hello_web/controllers/user_session_html.ex
 * creating lib/hello_web/controllers/user_session_controller.ex
 * creating test/hello_web/controllers/user_session_controller_test.exs
 * creating lib/hello_web/templates/user_session/new.html.heex
-* creating lib/hello_web/views/user_settings_view.ex
+* creating lib/hello_web/controllers/user_settings_html.ex
 * creating lib/hello_web/templates/user_settings/edit.html.heex
 * creating lib/hello_web/controllers/user_settings_controller.ex
 * creating test/hello_web/controllers/user_settings_controller_test.exs
@@ -309,7 +309,7 @@ in its default location.
 Do you want to create it? [Y/n]
 ```
 
-By pressing confirming, a channel will be created, then you need to connect the socket in your endpoint:
+By confirming, a channel will be created, then you need to connect the socket in your endpoint:
 
 ```console
 Add the socket handler to your `lib/hello_web/endpoint.ex`, for example:
@@ -362,6 +362,7 @@ If we don't specify a router for this task, it will default to the router Phoeni
 $ mix phx.routes
 GET  /  TaskTester.PageController.index/2
 ```
+
 We can also specify an individual router if we have more than one for our application.
 
 ```console
@@ -377,12 +378,14 @@ This is the task we use to get our application running. It takes no arguments at
 $ mix phx.server
 [info] Running TaskTesterWeb.Endpoint with Cowboy on port 4000 (http)
 ```
+
 It will silently ignore our `DoesNotExist` argument:
 
 ```console
 $ mix phx.server DoesNotExist
 [info] Running TaskTesterWeb.Endpoint with Cowboy on port 4000 (http)
 ```
+
 If we would like to start our application and also have an `IEx` session open to it, we can run the Mix task within `iex` like this, `iex -S mix phx.server`.
 
 ```console
@@ -405,8 +408,10 @@ Before we run this task let's inspect the contents of two directories in our hel
 First `priv/static/` which should look similar to this:
 
 ```console
-├── images
-│   └── phoenix.png
+├── assets
+│   ├── app.css
+│   └── app.js
+├── favicon.ico
 └── robots.txt
 ```
 
@@ -414,11 +419,12 @@ And then `assets/` which should look similar to this:
 
 ```console
 ├── css
-│   └── app.css
+│   └── app.css
 ├── js
-│   └── app.js
+│   └── app.js
+├── tailwind.config.js
 └── vendor
-    └── phoenix.js
+    └── topbar.js
 ```
 
 All of these files are our static assets. Now let's run the `mix phx.digest` task.
@@ -593,7 +599,6 @@ We certainly should follow the instructions and add our new repo to our supervis
 ```elixir
 . . .
 children = [
-  # Start the Ecto repository
   Hello.Repo,
   # Our custom repo
   OurCustom.Repo,

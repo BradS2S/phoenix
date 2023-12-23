@@ -4,8 +4,8 @@ import Config
 # debugging and code reloading.
 #
 # The watchers configuration can be used to run external
-# watchers to your application. For example, we use it
-# with esbuild to bundle .js and .css sources.
+# watchers to your application. For example, we can use it
+# to bundle .js and .css sources.
 config :<%= @app_name %>, <%= @endpoint_module %>,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
@@ -14,10 +14,9 @@ config :<%= @app_name %>, <%= @endpoint_module %>,
   code_reloader: true,
   debug_errors: true,
   secret_key_base: "<%= @secret_key_base_dev %>",
-  watchers: <%= if @assets do %>[
-    # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
+  watchers: <%= if @javascript or @css do %>[<%= if @javascript do %>
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}<%= if @css, do: "," %><% end %><%= if @css do %>
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}<% end %>
   ]<% else %>[]<% end %>
 
 # ## SSL Support
@@ -28,7 +27,6 @@ config :<%= @app_name %>, <%= @endpoint_module %>,
 #
 #     mix phx.gen.cert
 #
-# Note that this task requires Erlang/OTP 20 or later.
 # Run `mix help phx.gen.cert` for more information.
 #
 # The `http:` config above can be replaced with:
@@ -50,8 +48,7 @@ config :<%= @app_name %>, <%= @endpoint_module %>,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",<%= if @gettext do %>
       ~r"priv/gettext/.*(po)$",<% end %>
-      ~r"lib/<%= @lib_web_name %>/(live|views)/.*(ex)$",
-      ~r"lib/<%= @lib_web_name %>/templates/.*(eex)$"
+      ~r"lib/<%= @lib_web_name %>/(controllers|live|components)/.*(ex|heex)$"
     ]
   ]<% end %>
 
@@ -66,7 +63,10 @@ config :logger, :console, format: "[$level] $message\n"
 config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
-config :phoenix, :plug_init_mode, :runtime<%= if @mailer do %>
+config :phoenix, :plug_init_mode, :runtime<%= if @html do %>
+
+# Include HEEx debug annotations as HTML comments in rendered markup
+config :phoenix_live_view, :debug_heex_annotations, true<% end %><%= if @mailer do %>
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false<% end %>

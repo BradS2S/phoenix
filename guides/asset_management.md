@@ -2,37 +2,63 @@
 
 Beside producing HTML, most web applications have various assets (JavaScript, CSS, images, fonts and so on).
 
-From Phoenix v1.6, new applications use [esbuild](https://esbuild.github.io/) to prepare assets via the [Elixir esbuild wrapper](https://github.com/phoenixframework/esbuild). This direct integration with `esbuild` means that newly generated applications do not have dependencies on Node.js or an external build system (e.g. Webpack).
+From Phoenix v1.7, new applications use [esbuild](https://esbuild.github.io/) to prepare assets via the [Elixir esbuild wrapper](https://github.com/phoenixframework/esbuild), and [tailwindcss](https://tailwindcss.com) via the [Elixir tailwindcss wrapper](https://github.com/phoenixframework/tailwind) for CSS. The direct integration with `esbuild` and `tailwind` means that newly generated applications do not have dependencies on Node.js or an external build system (e.g. Webpack).
 
 Your JavaScript is typically placed at "assets/js/app.js" and `esbuild` will extract it to "priv/static/assets/app.js". In development, this is done automatically via the `esbuild` watcher. In production, this is done by running `mix assets.deploy`.
 
-`esbuild` can also handle your CSS files. For this, there is typically an `import "../css/app.css"` at the top of your "assets/js/app.js". We will explore alternatives below.
+`esbuild` can also handle your CSS files, but by default `tailwind` handles all CSS building.
 
 Finally, all other assets, that usually don't have to be preprocessed, go directly to "priv/static".
 
 ## Third-party JS packages
 
-If you want to import JavaScript dependencies, you have two options to add them to your application:
+If you want to import JavaScript dependencies, you have at least three options to add them to your application:
 
-  1. Vendor those dependencies inside your project and import them in your "assets/js/app.js" using a relative path:
+1. Vendor those dependencies inside your project and import them in your "assets/js/app.js" using a relative path:
 
-         import topbar from "../vendor/topbar"
+   ```js
+   import topbar from "../vendor/topbar"
+   ```
 
-  2. Call `npm install topbar --save` inside your assets directory and `esbuild` will be able to automatically pick them up:
+2. Call `npm install topbar --save` inside your assets directory and `esbuild` will be able to automatically pick them up:
 
-         import topbar from "topbar"
+   ```js
+   import topbar from "topbar"
+   ```
+
+3. Use Mix to track the dependency from a source repository:
+
+   ```elixir
+   # mix.exs
+   {:topbar,
+    github: "buunguyen/topbar",
+    ref: "17a435bd82aca08fbf6b6f1842e2e9c24e6e3a78",
+    app: false,
+    compile: false}
+   ```
+
+   Run `mix deps.get` to fetch the dependency and then import it:
+
+   ```js
+   import topbar from "../../deps/topbar"
+   ```
+
+   New applications use this third approach to import Heroicons, avoiding
+   vendoring a copy of all icons when you may only use a few or even none,
+   avoiding Node.js and `npm`, and tracking an explicit version that is easy to
+   update thanks to Mix. It is important to note that git dependencies cannot
+   be used by Hex packages, so if you intend to publish your project to Hex,
+   consider vendoring the files instead.
 
 ## CSS
 
-`esbuild` has basic support for CSS. If you import a `.css` file at the top of your main `.js` file, `esbuild` will also bundle it, and write it to the same directory as your final `app.js`. That's what Phoenix does by default:
+By default, Phoenix generates CSS with the `tailwind` library, but esbuild has basic support for CSS which you can use if you aren't using tailwind. If you import a `.css` file at the top of your main `.js` file, `esbuild` will bundle it, and write it to the same directory as your final `app.js`.
 
 ```js
 import "../css/app.css"
 ```
 
 However, if you want to use a CSS framework, you will need to use a separate tool. Here are some options to do so:
-
-  * Use [standalone Tailwind](https://github.com/phoenixframework/tailwind) or [standalone SASS](https://github.com/CargoSense/dart_sass). Both similar to `esbuild`.
 
   * You can use `esbuild` plugins (requires `npm`). See the "Esbuild plugins" section below
 
@@ -87,55 +113,54 @@ $ yarn add ../deps/phoenix ../deps/phoenix_html ../deps/phoenix_live_view
 Next, add a custom JavaScript build script. We'll call the example `assets/build.js`:
 
 ```js
-const esbuild = require('esbuild')
+const esbuild = require("esbuild");
 
-const args = process.argv.slice(2)
-const watch = args.includes('--watch')
-const deploy = args.includes('--deploy')
+const args = process.argv.slice(2);
+const watch = args.includes('--watch');
+const deploy = args.includes('--deploy');
 
 const loader = {
   // Add loaders for images/fonts/etc, e.g. { '.svg': 'file' }
-}
+};
 
 const plugins = [
   // Add and configure plugins here
-]
+];
 
+// Define esbuild options
 let opts = {
-  entryPoints: ['js/app.js'],
+  entryPoints: ["js/app.js"],
   bundle: true,
-  target: 'es2017',
-  outdir: '../priv/static/assets',
-  logLevel: 'info',
-  loader,
-  plugins
-}
-
-if (watch) {
-  opts = {
-    ...opts,
-    watch,
-    sourcemap: 'inline'
-  }
-}
+  logLevel: "info",
+  target: "es2017",
+  outdir: "../priv/static/assets",
+  external: ["*.css", "fonts/*", "images/*"],
+  loader: loader,
+  plugins: plugins,
+};
 
 if (deploy) {
   opts = {
     ...opts,
-    minify: true
-  }
+    minify: true,
+  };
 }
 
-const promise = esbuild.build(opts)
-
 if (watch) {
-  promise.then(_result => {
-    process.stdin.on('close', () => {
-      process.exit(0)
+  opts = {
+    ...opts,
+    sourcemap: "inline",
+  };
+  esbuild
+    .context(opts)
+    .then((ctx) => {
+      ctx.watch();
     })
-
-    process.stdin.resume()
-  })
+    .catch((_error) => {
+      process.exit(1);
+    });
+} else {
+  esbuild.build(opts);
 }
 ```
 

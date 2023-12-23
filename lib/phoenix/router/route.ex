@@ -13,7 +13,7 @@ defmodule Phoenix.Router.Route do
     * `:line` - the line the route was defined
     * `:kind` - the kind of route, one of `:match`, `:forward`
     * `:path` - the normalized path as string
-    * `:hosts` - the this of request hosts or host prefixes
+    * `:hosts` - the list of request hosts or host prefixes
     * `:plug` - the plug module
     * `:plug_opts` - the plug options
     * `:helper` - the name of the helper as a string (may be nil)
@@ -22,6 +22,7 @@ defmodule Phoenix.Router.Route do
     * `:pipe_through` - the pipeline names as a list of atoms
     * `:metadata` - general metadata used on telemetry events and route info
     * `:trailing_slash?` - whether or not the helper functions append a trailing slash
+    * `:warn_on_verify?` - whether or not to warn on route verification
   """
 
   defstruct [:verb, :line, :kind, :path, :hosts, :plug, :plug_opts,
