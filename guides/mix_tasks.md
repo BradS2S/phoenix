@@ -2,7 +2,7 @@
 
 There are currently a number of built-in Phoenix-specific and Ecto-specific [Mix tasks](`Mix.Task`) available to us within a newly-generated application. We can also create our own application specific tasks.
 
-> Note to learn more about `mix`, you can read Elixir's official [Introduction to Mix](https://elixir-lang.org/getting-started/mix-otp/introduction-to-mix.html).
+> Note to learn more about `mix`, you can read Elixir's official [Introduction to Mix](https://hexdocs.pm/elixir/introduction-to-mix.html).
 
 ## Phoenix tasks
 
@@ -309,7 +309,7 @@ in its default location.
 Do you want to create it? [Y/n]
 ```
 
-By pressing confirming, a channel will be created, then you need to connect the socket in your endpoint:
+By confirming, a channel will be created, then you need to connect the socket in your endpoint:
 
 ```console
 Add the socket handler to your `lib/hello_web/endpoint.ex`, for example:
@@ -408,8 +408,10 @@ Before we run this task let's inspect the contents of two directories in our hel
 First `priv/static/` which should look similar to this:
 
 ```console
-├── images
-│   └── phoenix.png
+├── assets
+│   ├── app.css
+│   └── app.js
+├── favicon.ico
 └── robots.txt
 ```
 
@@ -417,11 +419,12 @@ And then `assets/` which should look similar to this:
 
 ```console
 ├── css
-│   └── app.css
+│   └── app.css
 ├── js
-│   └── app.js
+│   └── app.js
+├── tailwind.config.js
 └── vendor
-    └── phoenix.js
+    └── topbar.js
 ```
 
 All of these files are our static assets. Now let's run the `mix phx.digest` task.
@@ -596,7 +599,6 @@ We certainly should follow the instructions and add our new repo to our supervis
 ```elixir
 . . .
 children = [
-  # Start the Ecto repository
   Hello.Repo,
   # Our custom repo
   OurCustom.Repo,

@@ -178,6 +178,18 @@ defmodule Phoenix.Endpoint.EndpointTest do
     assert Endpoint.static_path("/foo.css") == "/foo-d978852bea6530fcd197b5445ed008fd.css"
   end
 
+  test "uses correct path for resources with fragment identifier" do
+    config = put_in(@config[:cache_manifest_skip_vsn], false)
+    assert Endpoint.config_change([{Endpoint, config}], []) == :ok
+
+    assert Endpoint.static_path("/foo.css#info") ==
+             "/foo-d978852bea6530fcd197b5445ed008fd.css?vsn=d#info"
+
+    # assert that even multiple presences of a number sign are treated as a fragment
+    assert Endpoint.static_path("/foo.css#info#me") ==
+             "/foo-d978852bea6530fcd197b5445ed008fd.css?vsn=d#info#me"
+  end
+
   @tag :capture_log
   test "invokes init/2 callback" do
     defmodule InitEndpoint do
@@ -213,6 +225,22 @@ defmodule Phoenix.Endpoint.EndpointTest do
     StaticEndpoint.start_link()
     assert StaticEndpoint.path("/phoenix.png") =~ "/phoenix.png"
     assert StaticEndpoint.static_path("/phoenix.png") =~ "/static/phoenix.png"
+  end
+
+  @tag :capture_log
+  test "can find the running address and port for an endpoint" do
+    Application.put_env(:phoenix, __MODULE__.AddressEndpoint,
+      http: [ip: {127, 0, 0, 1}, port: 0],
+      server: true
+    )
+
+    defmodule AddressEndpoint do
+      use Phoenix.Endpoint, otp_app: :phoenix
+    end
+
+    AddressEndpoint.start_link()
+    assert {:ok, {{127, 0, 0, 1}, port}} = AddressEndpoint.server_info(:http)
+    assert is_integer(port)
   end
 
   test "injects pubsub broadcast with configured server" do

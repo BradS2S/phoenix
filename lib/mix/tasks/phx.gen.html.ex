@@ -183,7 +183,9 @@ defmodule Mix.Tasks.Phx.Gen.Html do
 
   @doc false
   def inputs(%Schema{} = schema) do
-    Enum.map(schema.attrs, fn
+    schema.attrs
+    |> Enum.reject(fn {_key, type} -> type == :map end)
+    |> Enum.map(fn
       {key, :integer} ->
         ~s(<.input field={f[#{inspect(key)}]} type="number" label="#{label(key)}" />)
 
@@ -257,6 +259,9 @@ defmodule Mix.Tasks.Phx.Gen.Html do
       lines = input |> String.split("\n") |> Enum.reject(&(&1 == ""))
 
       case lines do
+        [] ->
+          []
+
         [line] ->
           [columns, line]
 

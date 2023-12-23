@@ -16,7 +16,7 @@ defmodule HelloWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, {HelloWeb.Layouts, :root}
+    plug :put_root_layout, html: {HelloWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
@@ -52,6 +52,18 @@ get "/", PageController, :home
 ```
 
 `get` is a Phoenix macro that corresponds to the HTTP verb GET. Similar macros exist for other HTTP verbs, including POST, PUT, PATCH, DELETE, OPTIONS, CONNECT, TRACE, and HEAD.
+
+> #### Why the macros? {: .info}
+>
+> Phoenix does its best to keep the usage of macros low. You may have noticed, however, that the `Phoenix.Router` relies heavily on macros. Why is that?
+>
+> We use `get`, `post`, `put`, and `delete` to define your routes. We use macros for two purposes:
+>
+>   * They define the routing engine, used on every request, to choose which controller to dispatch the request to. Thanks to macros, Phoenix compiles all of your routes to a huge case-statement with pattern matching rules, which is heavily optimized by the Erlang VM
+>
+>   * For each route you define, we also define metadata to implement `Phoenix.VerifiedRoutes`. As we will soon learn, verified routes allows to us to reference any route as if it is a plain looking string, except it is verified by the compiler to be valid (making it much harder to ship broken links, forms, mails, etc to production)
+>
+> In other words, the router relies on macros to build applications that are faster and safer. Also remember that macros in Elixir are compile-time only, which gives plenty of stability after the code is compiled. As we will learn next, Phoenix also provides introspection for all defined routes via `mix phx.routes`.
 
 ## Examining routes
 
@@ -236,14 +248,14 @@ When building paths for nested routes, we will need to interpolate the IDs where
 ```elixir
 user_id = 42
 post_id = 17
-~p"/users/#{user_id}/#{post_id}"
+~p"/users/#{user_id}/posts/#{post_id}"
 "/users/42/posts/17"
 ```
 
-Verified routes also support the `Phoenix.Param` protocol, but we don't need to concern ourselves with elixir protocols just yet. Just know that once we start building our application with structs like `%User{}` and `%Post{}`, we'll be able to interpolate those data structures directly into our `~p` paths and phoenix will pluck out the correct fields to use in the route.
+Verified routes also support the `Phoenix.Param` protocol, but we don't need to concern ourselves with Elixir protocols just yet. Just know that once we start building our application with structs like `%User{}` and `%Post{}`, we'll be able to interpolate those data structures directly into our `~p` paths and Phoenix will pluck out the correct fields to use in the route.
 
 ```elixir
-~p"/users/#{user}/#{post}"
+~p"/users/#{user}/posts/#{post}"
 "/users/42/posts/17"
 ```
 
@@ -457,7 +469,7 @@ defmodule HelloWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, {HelloWeb.Layouts, :root}
+    plug :put_root_layout, html: {HelloWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
@@ -502,7 +514,7 @@ defmodule HelloWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, {HelloWeb.Layouts, :root}
+    plug :put_root_layout, html: {HelloWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
@@ -519,9 +531,9 @@ defmodule HelloWeb.Router do
 end
 ```
 
-The above assumes there is a plug called `MyApp.Authentication` that performs authentication and is now part of the `:auth` pipeline.
+The above assumes there is a plug called `HelloWeb.Authentication` that performs authentication and is now part of the `:auth` pipeline.
 
-Note that pipelines themselves are plugs, so we can plug a pipeline inside another pipeline. For example, we could rewrite the `review_checks` pipeline above to automatically invoke `browser`, simplifying the downstream pipeline call:
+Note that pipelines themselves are plugs, so we can plug a pipeline inside another pipeline. For example, we could rewrite the `auth` pipeline above to automatically invoke `browser`, simplifying the downstream pipeline call:
 
 ```elixir
   pipeline :auth do

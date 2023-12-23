@@ -16,12 +16,12 @@ Heroku is a great platform and Elixir performs well on it. However, you may run 
   - Heroku [limits the number of simultaneous connections](https://devcenter.heroku.com/articles/http-routing#request-concurrency) as well as the [duration of each connection](https://devcenter.heroku.com/articles/limits#http-timeouts). It is common to use Elixir for real-time apps which need lots of concurrent, persistent connections, and Phoenix is capable of [handling over 2 million connections on a single server](https://www.phoenixframework.org/blog/the-road-to-2-million-websocket-connections).
 
 - Distributed clustering is not possible.
-  - Heroku [firewalls dynos off from one another](https://devcenter.heroku.com/articles/dynos#networking). This means things like [distributed Phoenix channels](https://dockyard.com/blog/2016/01/28/running-elixir-and-phoenix-projects-on-a-cluster-of-nodes) and [distributed tasks](https://elixir-lang.org/getting-started/mix-otp/distributed-tasks.html) will need to rely on something like Redis instead of Elixir's built-in distribution.
+  - Heroku [firewalls dynos off from one another](https://devcenter.heroku.com/articles/dynos#networking). This means things like [distributed Phoenix channels](https://dockyard.com/blog/2016/01/28/running-elixir-and-phoenix-projects-on-a-cluster-of-nodes) and [distributed tasks](https://hexdocs.pm/elixir/distributed-tasks.html) will need to rely on something like Redis instead of Elixir's built-in distribution.
 
-- In-memory state such as those in [Agents](https://elixir-lang.org/getting-started/mix-otp/agent.html), [GenServers](https://elixir-lang.org/getting-started/mix-otp/genserver.html), and [ETS](https://elixir-lang.org/getting-started/mix-otp/ets.html) will be lost every 24 hours.
+- In-memory state such as those in [Agents](https://hexdocs.pm/elixir/agents.html), [GenServers](https://hexdocs.pm/elixir/genservers.html), and [ETS](https://hexdocs.pm/elixir/erlang-term-storage.html) will be lost every 24 hours.
   - Heroku [restarts dynos](https://devcenter.heroku.com/articles/dynos#restarting) every 24 hours regardless of whether the node is healthy.
 
-- [The built-in observer](https://elixir-lang.org/getting-started/debugging.html#observer) can't be used with Heroku.
+- [The built-in observer](https://hexdocs.pm/elixir/debugging.html#observer) can't be used with Heroku.
   - Heroku does allow for connection into your dyno, but you won't be able to use the observer to watch the state of your dyno.
 
 If you are just getting started, or you don't expect to use the features above, Heroku should be enough for your needs. For instance, if you are migrating an existing application running on Heroku to Phoenix, keeping a similar set of features, Elixir will perform just as well or even better than your current stack.
@@ -152,20 +152,22 @@ Finally, note that since we are using multiple buildpacks, you might run into an
 
 Every new Phoenix project ships with a config file `config/runtime.exs` (formerly `config/prod.secret.exs`) which loads configuration and secrets from [environment variables](https://devcenter.heroku.com/articles/config-vars). This aligns well with Heroku best practices, so the only work left for us to do is to configure URLs and SSL.
 
-First let's tell Phoenix to use our Heroku URL and enforce we only use the SSL version of the website. Also, bind to the port requested by Heroku in the [`$PORT` environment variable](https://devcenter.heroku.com/articles/runtime-principles#web-servers). Find the url line in your `config/prod.exs`:
+First let's tell Phoenix enforce we only use the SSL version of the website. Find the endpoint config in your `config/runtime.exs`:
 
 ```elixir
-url: [host: "example.com", port: 80],
+config :scaffold, ScaffoldWeb.Endpoint,
+  url: [host: host, port: 443, scheme: "https"],
 ```
 
-... and replace it with this (don't forget to replace `mysterious-meadow-6277` with your application name):
+... and add `force_ssl`
 
 ```elixir
-url: [scheme: "https", host: "mysterious-meadow-6277.herokuapp.com", port: 443],
-force_ssl: [rewrite_on: [:x_forwarded_proto]],
+config :scaffold, ScaffoldWeb.Endpoint,
+  url: [host: host, port: 443, scheme: "https"],
+  force_ssl: [rewrite_on: [:x_forwarded_proto]],
 ```
 
-Then open up your `config/runtime.exs` (formerly `config/prod.secret.exs`) and uncomment the `# ssl: true,` line in your repository configuration. It will look like this:
+Then in your `config/runtime.exs` (formerly `config/prod.secret.exs`) and uncomment the `# ssl: true,` line in your repository configuration. It will look like this:
 
 ```elixir
 config :hello, Hello.Repo,
@@ -185,6 +187,12 @@ defmodule HelloWeb.Endpoint do
 
   ...
 end
+```
+
+Also set the host in Heroku:
+
+```console
+$ heroku config:set PHX_HOST="mysterious-meadow-6277.herokuapp.com"
 ```
 
 This ensures that any idle connections are closed by Phoenix before they reach Heroku's 55-second timeout window.
@@ -244,7 +252,7 @@ $ git commit -a -m "Use production config from Heroku ENV variables and decrease
 And deploy:
 
 ```console
-$ git push heroku master
+$ git push heroku main
 Counting objects: 55, done.
 Delta compression using up to 8 threads.
 Compressing objects: 100% (49/49), done.

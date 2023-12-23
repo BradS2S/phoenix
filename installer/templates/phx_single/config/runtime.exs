@@ -36,6 +36,8 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
+  config :<%= @app_name %>, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+
   config :<%= @app_name %>, <%= @endpoint_module %>,
     url: [host: host, port: 443, scheme: "https"],
     http: [
@@ -72,8 +74,8 @@ if config_env() == :prod do
   # "priv/ssl/server.key". For all supported SSL configuration
   # options, see https://hexdocs.pm/plug/Plug.SSL.html#configure/1
   #
-  # We also recommend setting `force_ssl` in your endpoint, ensuring
-  # no data is ever sent via http, always redirecting to https:
+  # We also recommend setting `force_ssl` in your config/prod.exs,
+  # ensuring no data is ever sent via http, always redirecting to https:
   #
   #     config :<%= @web_app_name %>, <%= @endpoint_module %>,
   #       force_ssl: [hsts: true]
