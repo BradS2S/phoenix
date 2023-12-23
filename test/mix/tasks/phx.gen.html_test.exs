@@ -54,6 +54,7 @@ defmodule Mix.Tasks.Phx.Gen.HtmlTest do
                       alarm:time
                       alarm_usec:time_usec
                       secret:uuid:redact announcement_date:date alarm:time
+                      metadata:map
                       weight:float user_id:references:users))
 
       assert_file("lib/phoenix/blog/post.ex")
@@ -167,6 +168,7 @@ defmodule Mix.Tasks.Phx.Gen.HtmlTest do
         assert file =~ ~s(<.input field={f[:announcement_date]} type="date")
         assert file =~ ~s(<.input field={f[:alarm]} type="time")
         assert file =~ ~s(<.input field={f[:secret]} type="text" label="Secret" />)
+        refute file =~ ~s(field={f[:metadata]})
 
         assert file =~ """
                  <.input
@@ -320,6 +322,15 @@ defmodule Mix.Tasks.Phx.Gen.HtmlTest do
 
       assert_file("lib/phoenix_web/controllers/comment_html.ex", fn file ->
         assert file =~ "defmodule PhoenixWeb.CommentHTML"
+      end)
+    end)
+  end
+
+  test "with a matching plural and singular term", config do
+    in_tmp_project(config.test, fn ->
+      Gen.Html.run(~w(Tracker Series series value:integer))
+      assert_file("lib/phoenix_web/controllers/series_controller.ex", fn file ->
+        assert file =~ "render(conn, :index, series_collection: series)"
       end)
     end)
   end

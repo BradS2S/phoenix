@@ -117,8 +117,8 @@ defmodule <%= inspect auth_module %>Test do
     end
   end
 
-  describe "on_mount: mount_current_<%= schema.singular %>" do
-    test "assigns current_<%= schema.singular %> based on a valid <%= schema.singular %>_token ", %{conn: conn, <%= schema.singular %>: <%= schema.singular %>} do
+  describe "on_mount :mount_current_<%= schema.singular %>" do
+    test "assigns current_<%= schema.singular %> based on a valid <%= schema.singular %>_token", %{conn: conn, <%= schema.singular %>: <%= schema.singular %>} do
       <%= schema.singular %>_token = <%= inspect context.alias %>.generate_<%= schema.singular %>_session_token(<%= schema.singular %>)
       session = conn |> put_session(:<%= schema.singular %>_token, <%= schema.singular %>_token) |> get_session()
 
@@ -128,7 +128,7 @@ defmodule <%= inspect auth_module %>Test do
       assert updated_socket.assigns.current_<%= schema.singular %>.id == <%= schema.singular %>.id
     end
 
-    test "assigns nil to current_<%= schema.singular %> assign if there isn't a valid <%= schema.singular %>_token ", %{conn: conn} do
+    test "assigns nil to current_<%= schema.singular %> assign if there isn't a valid <%= schema.singular %>_token", %{conn: conn} do
       <%= schema.singular %>_token = "invalid_token"
       session = conn |> put_session(:<%= schema.singular %>_token, <%= schema.singular %>_token) |> get_session()
 
@@ -148,8 +148,8 @@ defmodule <%= inspect auth_module %>Test do
     end
   end
 
-  describe "on_mount: ensure_authenticated" do
-    test "authenticates current_<%= schema.singular %> based on a valid <%= schema.singular %>_token ", %{conn: conn, <%= schema.singular %>: <%= schema.singular %>} do
+  describe "on_mount :ensure_authenticated" do
+    test "authenticates current_<%= schema.singular %> based on a valid <%= schema.singular %>_token", %{conn: conn, <%= schema.singular %>: <%= schema.singular %>} do
       <%= schema.singular %>_token = <%= inspect context.alias %>.generate_<%= schema.singular %>_session_token(<%= schema.singular %>)
       session = conn |> put_session(:<%= schema.singular %>_token, <%= schema.singular %>_token) |> get_session()
 
@@ -159,7 +159,7 @@ defmodule <%= inspect auth_module %>Test do
       assert updated_socket.assigns.current_<%= schema.singular %>.id == <%= schema.singular %>.id
     end
 
-    test "redirects to login page if there isn't a valid <%= schema.singular %>_token ", %{conn: conn} do
+    test "redirects to login page if there isn't a valid <%= schema.singular %>_token", %{conn: conn} do
       <%= schema.singular %>_token = "invalid_token"
       session = conn |> put_session(:<%= schema.singular %>_token, <%= schema.singular %>_token) |> get_session()
 
@@ -172,7 +172,7 @@ defmodule <%= inspect auth_module %>Test do
       assert updated_socket.assigns.current_<%= schema.singular %> == nil
     end
 
-    test "redirects to login page if there isn't a <%= schema.singular %>_token ", %{conn: conn} do
+    test "redirects to login page if there isn't a <%= schema.singular %>_token", %{conn: conn} do
       session = conn |> get_session()
 
       socket = %LiveView.Socket{
@@ -185,7 +185,7 @@ defmodule <%= inspect auth_module %>Test do
     end
   end
 
-  describe "on_mount: :redirect_if_<%= schema.singular %>_is_authenticated" do
+  describe "on_mount :redirect_if_<%= schema.singular %>_is_authenticated" do
     test "redirects if there is an authenticated  <%= schema.singular %> ", %{conn: conn, <%= schema.singular %>: <%= schema.singular %>} do
       <%= schema.singular %>_token = <%= inspect context.alias %>.generate_<%= schema.singular %>_session_token(<%= schema.singular %>)
       session = conn |> put_session(:<%= schema.singular %>_token, <%= schema.singular %>_token) |> get_session()
@@ -199,7 +199,7 @@ defmodule <%= inspect auth_module %>Test do
                )
     end
 
-    test "Don't redirect is there is no authenticated <%= schema.singular %>", %{conn: conn} do
+    test "doesn't redirect if there is no authenticated <%= schema.singular %>", %{conn: conn} do
       session = conn |> get_session()
 
       assert {:cont, _updated_socket} =

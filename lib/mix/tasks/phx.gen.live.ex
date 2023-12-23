@@ -36,7 +36,7 @@ defmodule Mix.Tasks.Phx.Gen.Live do
     * a helpers module in `lib/app_web/live/live_helpers.ex` with a modal
 
   After file generation is complete, there will be output regarding required
-  updates to the lib/app_web/router.ex file.
+  updates to the `lib/app_web/router.ex` file.
 
       Add the live routes to your browser scope in lib/app_web/router.ex:
 
@@ -85,6 +85,10 @@ defmodule Mix.Tasks.Phx.Gen.Live do
   and tests, but leave internal implementation of the context or schema
   to yourself. You can use the `--no-context` and `--no-schema` flags
   for file generation control.
+
+      mix phx.gen.live Accounts User users --no-context --no-schema
+
+  In the cases above, tests are still generated, but they will all fail.
 
   You can also change the table name or configure the migrations to
   use binary ids for primary keys, see `mix help phx.gen.schema` for more
@@ -267,7 +271,9 @@ defmodule Mix.Tasks.Phx.Gen.Live do
 
   @doc false
   def inputs(%Schema{} = schema) do
-    Enum.map(schema.attrs, fn
+    schema.attrs
+    |> Enum.reject(fn {_key, type} -> type == :map end)
+    |> Enum.map(fn
       {_, {:references, _}} ->
         nil
 

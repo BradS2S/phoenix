@@ -12,7 +12,7 @@ Finally, all other assets, that usually don't have to be preprocessed, go direct
 
 ## Third-party JS packages
 
-If you want to import JavaScript dependencies, you have two options to add them to your application:
+If you want to import JavaScript dependencies, you have at least three options to add them to your application:
 
 1. Vendor those dependencies inside your project and import them in your "assets/js/app.js" using a relative path:
 
@@ -25,6 +25,30 @@ If you want to import JavaScript dependencies, you have two options to add them 
    ```js
    import topbar from "topbar"
    ```
+
+3. Use Mix to track the dependency from a source repository:
+
+   ```elixir
+   # mix.exs
+   {:topbar,
+    github: "buunguyen/topbar",
+    ref: "17a435bd82aca08fbf6b6f1842e2e9c24e6e3a78",
+    app: false,
+    compile: false}
+   ```
+
+   Run `mix deps.get` to fetch the dependency and then import it:
+
+   ```js
+   import topbar from "../../deps/topbar"
+   ```
+
+   New applications use this third approach to import Heroicons, avoiding
+   vendoring a copy of all icons when you may only use a few or even none,
+   avoiding Node.js and `npm`, and tracking an explicit version that is easy to
+   update thanks to Mix. It is important to note that git dependencies cannot
+   be used by Hex packages, so if you intend to publish your project to Hex,
+   consider vendoring the files instead.
 
 ## CSS
 
@@ -89,55 +113,54 @@ $ yarn add ../deps/phoenix ../deps/phoenix_html ../deps/phoenix_live_view
 Next, add a custom JavaScript build script. We'll call the example `assets/build.js`:
 
 ```js
-const esbuild = require('esbuild')
+const esbuild = require("esbuild");
 
-const args = process.argv.slice(2)
-const watch = args.includes('--watch')
-const deploy = args.includes('--deploy')
+const args = process.argv.slice(2);
+const watch = args.includes('--watch');
+const deploy = args.includes('--deploy');
 
 const loader = {
   // Add loaders for images/fonts/etc, e.g. { '.svg': 'file' }
-}
+};
 
 const plugins = [
   // Add and configure plugins here
-]
+];
 
+// Define esbuild options
 let opts = {
-  entryPoints: ['js/app.js'],
+  entryPoints: ["js/app.js"],
   bundle: true,
-  target: 'es2017',
-  outdir: '../priv/static/assets',
-  logLevel: 'info',
-  loader,
-  plugins
-}
-
-if (watch) {
-  opts = {
-    ...opts,
-    watch,
-    sourcemap: 'inline'
-  }
-}
+  logLevel: "info",
+  target: "es2017",
+  outdir: "../priv/static/assets",
+  external: ["*.css", "fonts/*", "images/*"],
+  loader: loader,
+  plugins: plugins,
+};
 
 if (deploy) {
   opts = {
     ...opts,
-    minify: true
-  }
+    minify: true,
+  };
 }
 
-const promise = esbuild.build(opts)
-
 if (watch) {
-  promise.then(_result => {
-    process.stdin.on('close', () => {
-      process.exit(0)
+  opts = {
+    ...opts,
+    sourcemap: "inline",
+  };
+  esbuild
+    .context(opts)
+    .then((ctx) => {
+      ctx.watch();
     })
-
-    process.stdin.resume()
-  })
+    .catch((_error) => {
+      process.exit(1);
+    });
+} else {
+  esbuild.build(opts);
 }
 ```
 

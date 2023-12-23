@@ -46,6 +46,79 @@ styled with Tailwind CSS by default. You can opt-out of Tailwind CSS with the `-
 flag (the Tailwind CSS classes are kept in the generated components as reference for
 future styling).
 
+## 1.7.10 (2023-11-03)
+
+### Bug fixes
+  * [phx.new] – fix `CoreComponents.flash` generating incorrect id's causing flash messages to fail to be closed when clicked
+
+### Enhancements
+  * Support dynamic port for `Endpoint.url/0`
+
+## 1.7.9 (2023-10-11)
+
+### Bug fixes
+  * [Phoenix.CodeReloader] - Fix error in code reloader causing compilation errors
+  * [phx.new] – fix LiveView debug heex configuration being generated when `--no-html` pas passed
+
+## 1.7.8 (2023-10-09)
+
+### Bug fixes
+  * [Phoenix.ChannelTest] Stringify lists when pushing data
+  * [Phoenix.Controller] Fix filename when sending downloads with non-ascii names
+  * [Phoenix.CodeReloader] Remove duplicate warnings on recent Elixir versions
+  * [Phoenix.CodeReloader] Do not crash code reloader if file information is missing from diagnostic
+  * [Phoenix.Logger] Do not crash when status is atom
+  * [phx.gen.release] Fix `mix phx.gen.release --docker` failing with `:http_util` error on Elixir v1.15
+  * [phx.gen.*] Skip map inputs in generated forms as there is no trivial matching input
+  * [phx.new] Fix tailwind/esbuild config and paths in umbrella projects
+  * [phx.new] Do not render `th` for actions if actions are empty
+
+### Enhancements
+  * [Phoenix] Allow latest `plug_crypto`
+  * [Phoenix.Endpoint] Support dynamic socket drainer configuration
+  * [Phoenix.Logger] Change socket serializer/version logs to warning
+  * [Phoenix.VerifiedRoutes] Add support for static resources with fragments in `~p`
+  * [phx.gen.schema] Support `--repo` and `--migration-dir` flags
+  * [phx.new] Allow `<.input type="checkbox">` without `value` attr in core components
+  * [phx.new] Allow UTC datetimes in the generators
+  * [phx.new] Automatically migrate when release starts when using sqlite 3
+  * [phx.new] Allow ID to be assigned in flash component
+  * [phx.new] Add `--adapter` flag for generating application with bandit
+  * [phx.new] Include DNSCluster for simple clustering
+  * [phx.routes] Support `--method` option
+
+## 1.7.7 (2023-07-10)
+
+## Enhancements
+  * Support incoming binary payloads to channels over longpoll transport
+
+## 1.7.6 (2023-06-16)
+
+### Bug Fixes
+  * Support websock_adapter 0.5.3
+
+## Enhancements
+  *  Allow using Phoenix.ChannelTest socket/connect in another process
+
+## 1.7.5 (2023-06-15)
+
+### Bug Fixes
+  * Fix LongPoll error when draining connections
+
+## 1.7.4 (2023-06-15)
+
+### Bug Fixes
+  * Fix the WebSocket draining sending incorrect close code when draining causing LiveViews to reload the page instead of reconnecting
+
+## 1.7.3 (2023-05-30)
+
+### Enhancements
+  * Use LiveView 0.19 for new apps
+
+### Bug Fixes
+  * Fix compilation error page on plug debugger showing obscure error when app fails to compile
+  * Fix warnings being printed twice in route verification
+
 ## 1.7.2 (2023-03-20)
 
 ### Enhancements

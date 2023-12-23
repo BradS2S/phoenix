@@ -4,7 +4,7 @@
 
 > **Requirement**: This guide expects that you have gone through the [request life-cycle guide](request_lifecycle.html).
 
-The Phoenix endpoint pipeline takes a request, routes it to a controller, and calls a view module to render a template. The view interface from the controller is simple – the controller calls a view function with the connections assigns, and the functions job is to return a HEEx template. We call any function that accepts an `assigns` parameter and returns a HEEx template to be a *function component*. Function components are defined with the help of the [`Phoenix.Component`](https://hexdocs.pm/phoenix_live_view/Phoenix.Component.html) module.
+The Phoenix endpoint pipeline takes a request, routes it to a controller, and calls a view module to render a template. The view interface from the controller is simple – the controller calls a view function with the connections assigns, and the function's job is to return a HEEx template. We call any function that accepts an `assigns` parameter and returns a HEEx template a *function component*. Function components are defined with the help of the [`Phoenix.Component`](https://hexdocs.pm/phoenix_live_view/Phoenix.Component.html) module.
 
 Function components are the essential building block for any kind of markup-based template rendering you'll perform in Phoenix. They serve as a shared abstraction for the standard MVC controller-based applications, LiveView applications, layouts, and smaller UI definitions you'll use throughout other templates.
 
@@ -42,7 +42,7 @@ defmodule HelloWeb.HelloHTML do
 
   embed_templates "hello_html/*"
 
-  attr :messenger, :string
+  attr :messenger, :string, required: true
 
   def greet(assigns) do
     ~H"""
@@ -52,9 +52,23 @@ defmodule HelloWeb.HelloHTML do
 end
 ```
 
-In the example above, we defined a `greet/1` function which returns the HEEx template. Above the function, we called `attr`, provided by `Phoenix.Component`, which defines the attributes/assigns that function expects. Since templates are embedded inside the `HelloHTML` module, we can invoke the component simply as `<.greet messenger="..." />`, but we can also type `<HelloWeb.HelloHTML.greet messenger="..." />` if the component was defined elsewhere.
+We declared the attributes we accept via the `attr/3` macro provided by `Phoenix.Component`, then we defined our `greet/1` function which returns the HEEx template.
 
-By declaring attributes, Phoenix will warn if we call the `<.greet />` component without passing attributes. If an attribute is optional, you can specify the `:default` option with a value:
+Next we need to update `show.html.heex`:
+
+```elixir
+<section>
+  <.greet messenger={@messenger} />
+</section>
+```
+
+When we reload `http://localhost:4000/hello/Frank`, we should see the same content as before.
+
+Since templates are embedded inside the `HelloHTML` module, we were able to invoke the view function simply as `<.greet messenger="..." />`.
+
+If the component was defined elsewhere, we can also type `<HelloWeb.HelloHTML.greet messenger="..." />`.
+
+By declaring attributes as required, Phoenix will warn at compile time if we call the `<.greet />` component without passing attributes. If an attribute is optional, you can specify the `:default` option with a value:
 
 ```
 attr :messenger, :string, default: nil
@@ -183,27 +197,27 @@ In other words, after rendering your page, the result is placed in the `@inner_c
 
 Phoenix provides all kinds of conveniences to control which layout should be rendered. For example, the `Phoenix.Controller` module provides the `put_root_layout/2` function for us to switch _root layouts_. This takes `conn` as its first argument and a keyword list of formats and their layouts. You can set it to `false` to disable the layout altogether.
 
-You can edit the `home` action of `PageController` in `lib/hello_web/controllers/page_controller.ex` to look like this.
+You can edit the `index` action of `HelloController` in `lib/hello_web/controllers/hello_controller.ex` to look like this.
 
 ```elixir
-def home(conn, _params) do
+def index(conn, _params) do
   conn
   |> put_root_layout(html: false)
-  |> render(:home)
+  |> render(:index)
 end
 ```
 
-After reloading [http://localhost:4000/](http://localhost:4000/), we should see a very different page, one with no title, logo image, or CSS styling at all.
+After reloading [http://localhost:4000/hello](http://localhost:4000/hello), we should see a very different page, one with no title or CSS styling at all.
 
 To customize the application layout, we invoke a similar function named `put_layout/2`. Let's actually create another layout and render the index template into it. As an example, let's say we had a different layout for the admin section of our application which didn't have the logo image. To do this, copy the existing `app.html.heex` to a new file `admin.html.heex` in the same directory `lib/hello_web/components/layouts`. Then remove everything inside the `<header>...</header>` tags (or change it to whatever you desire) in the new file.
 
-Now, in the `home` action of the controller of `lib/hello_web/controllers/page_controller.ex`, add the following:
+Now, in the `index` action of the controller of `lib/hello_web/controllers/hello_controller.ex`, add the following:
 
 ```elixir
-def home(conn, _params) do
+def index(conn, _params) do
   conn
   |> put_layout(html: :admin)
-  |> render(:home)
+  |> render(:index)
 end
 ```
 
@@ -211,7 +225,7 @@ When we load the page, we should be rendering the admin layout without the heade
 
 At this point, you may be wondering, why does Phoenix have two layouts?
 
-First of all, it gives us flexibility. In practice, we will hardly have multiple root layouts, as they often contain only HTML headers. This allows us to focus on different application layouts with only the parts that changes between them. Second of all, Phoenix ships with a feature called LiveView, which allows us to build rich and real-time user experiences with server-rendered HTML. LiveView is capable of dynamically changing the contents of the page, but it only ever changes the app layout, never the root layout. We will learn about LiveView in future guides.
+First of all, it gives us flexibility. In practice, we will hardly have multiple root layouts, as they often contain only HTML headers. This allows us to focus on different application layouts with only the parts that changes between them. Second of all, Phoenix ships with a feature called LiveView, which allows us to build rich and real-time user experiences with server-rendered HTML. LiveView is capable of dynamically changing the contents of the page, but it only ever changes the app layout, never the root layout. Check out [the LiveView documentation](https://hexdocs.pm/phoenix_live_view) to learn more.
 
 ## CoreComponents
 
@@ -219,9 +233,9 @@ In a new Phoenix application, you will also find a `core_components.ex` module i
 
 If you look inside `def html` in `HelloWeb` placed at `lib/hello_web.ex`, you will see that `CoreComponents` are automatically imported into all HTML views via `use HelloWeb, :html`. This is also the reason why `CoreComponents` itself performs `use Phoenix.Component` instead `use HelloWeb, :html` at the top: doing the latter would cause a deadlock as we would try to import `CoreComponents` into itself.
 
-CoreComponents also play an important role in Phoenix code generators, as the code generator assume those components are available in order to quickly scaffold your application. In case you want to learn more about all of these pieces, you may:
+CoreComponents also play an important role in Phoenix code generators, as the code generators assume those components are available in order to quickly scaffold your application. In case you want to learn more about all of these pieces, you may:
 
-  * Exploring the generated `CoreComponents` module to learn more from practical examples
+  * Explore the generated `CoreComponents` module to learn more from practical examples
 
   * Read the official documentation for [`Phoenix.Component`](https://hexdocs.pm/phoenix_live_view/Phoenix.Component.html)
 
