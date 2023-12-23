@@ -54,7 +54,9 @@ defmodule Mix.Tasks.Phx.NewTest do
 
       assert_file("phx_blog/config/config.exs", fn file ->
         assert file =~ "ecto_repos: [PhxBlog.Repo]"
+        assert file =~ "generators: [timestamp_type: :utc_datetime]"
         assert file =~ "config :phoenix, :json_library, Jason"
+        assert file =~ ~s[cd: Path.expand("../assets", __DIR__),]
         refute file =~ "namespace: PhxBlog"
         refute file =~ "config :phx_blog, :generators"
       end)
@@ -149,12 +151,11 @@ defmodule Mix.Tasks.Phx.NewTest do
 
       # tailwind
       assert_file("phx_blog/assets/css/app.css")
-      assert_file("phx_blog/assets/tailwind.config.js")
-      assert_file("phx_blog/assets/vendor/heroicons/LICENSE.md")
-      assert_file("phx_blog/assets/vendor/heroicons/UPGRADE.md")
-      assert_file("phx_blog/assets/vendor/heroicons/optimized/24/outline/cake.svg")
-      assert_file("phx_blog/assets/vendor/heroicons/optimized/24/solid/cake.svg")
-      assert_file("phx_blog/assets/vendor/heroicons/optimized/20/solid/cake.svg")
+
+      assert_file("phx_blog/assets/tailwind.config.js", fn file ->
+        assert file =~ "phx_blog_web.ex"
+        assert file =~ "phx_blog_web/**/*.*ex"
+      end)
 
       refute File.exists?("phx_blog/priv/static/assets/app.css")
       refute File.exists?("phx_blog/priv/static/assets/app.js")
@@ -552,7 +553,7 @@ defmodule Mix.Tasks.Phx.NewTest do
   test "new with binary_id" do
     in_tmp("new with binary_id", fn ->
       Mix.Tasks.Phx.New.run([@app_name, "--binary-id"])
-      assert_file("phx_blog/config/config.exs", ~r/generators: \[binary_id: true\]/)
+      assert_file("phx_blog/config/config.exs", ~r/generators: \[.*binary_id: true\.*]/)
     end)
   end
 
@@ -598,7 +599,16 @@ defmodule Mix.Tasks.Phx.NewTest do
           assert file =~ "deps_path: \"../../deps\""
           assert file =~ "lockfile: \"../../mix.lock\""
         end)
+
+        refute_file("phx_blog/config/config.exs")
       end)
+
+      assert_file("config/config.exs", fn file ->
+        assert file =~ "PhxBlogWeb.Endpoint"
+        assert file =~ ~s[cd: Path.expand("../apps/phx_blog/assets", __DIR__),]
+      end)
+
+      assert_file("config/config.exs", "PhxBlogWeb.Endpoint")
     end)
   end
 
@@ -681,6 +691,15 @@ defmodule Mix.Tasks.Phx.NewTest do
       assert_file("custom_path/config/runtime.exs", [~r/database: database_path/])
       assert_file("custom_path/lib/custom_path/repo.ex", "Ecto.Adapters.SQLite3")
 
+      assert_file("custom_path/lib/custom_path/application.ex", fn file ->
+        assert file =~ "{Ecto.Migrator"
+        assert file =~ "repos: Application.fetch_env!(:custom_path, :ecto_repos)"
+        assert file =~ "skip: skip_migrations?()"
+
+        assert file =~ "defp skip_migrations?() do"
+        assert file =~ ~s/System.get_env("RELEASE_NAME") != nil/
+      end)
+
       assert_file("custom_path/test/support/conn_case.ex", "DataCase.setup_sandbox(tags)")
 
       assert_file(
@@ -729,6 +748,16 @@ defmodule Mix.Tasks.Phx.NewTest do
       assert_raise Mix.Error, ~s(Unknown database "invalid"), fn ->
         Mix.Tasks.Phx.New.run([project_path, "--database", "invalid"])
       end
+    end)
+  end
+
+  test "new with bandit web adapter" do
+    in_tmp("new with bandit web adapter", fn ->
+      project_path = Path.join(File.cwd!(), "custom_path")
+      Mix.Tasks.Phx.New.run([project_path, "--adapter", "bandit"])
+      assert_file("custom_path/mix.exs", ":bandit")
+
+      assert_file("custom_path/config/config.exs", "adapter: Bandit.PhoenixAdapter")
     end)
   end
 
